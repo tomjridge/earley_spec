@@ -1,5 +1,7 @@
+(*
 #require "ppx_deriving_yojson";;
 #require "tjr_lib";;
+*)
 
 open Tjr_set
 open Tjr_map
@@ -172,19 +174,6 @@ let cut itm j =
   | _ -> failwith ""
 
 
-(* specialize *)
-
-let step = 
-  step
-    ~item_set_ops 
-    ~raw_set_ops 
-    ~raw_set_to_list 
-    ~complete_ops
-    ~blocked_ops 
-    ~int_set_ops
-    ~int_set_to_list
-    ~add_item 
-    ~cut 
 
 
 
@@ -227,7 +216,20 @@ let run_parser ~input =
     | TM _T -> expand_tm ~input (i,_T) s
     | NT _X -> expand_nt (i,_X) s
   in
-  let step = step ~expand in
+  (* specialize *)
+  let step = 
+    step
+      ~item_set_ops 
+      ~raw_set_ops 
+      ~raw_set_to_list 
+      ~complete_ops
+      ~blocked_ops 
+      ~int_set_ops
+      ~int_set_to_list
+      ~add_item 
+      ~cut 
+      ~expand 
+  in
   let itm = Expand(0,NT _E) in
   let s = { 
     todo_done=(item_set_ops.add itm (item_set_ops.empty()));
@@ -246,8 +248,17 @@ let results_to_string rs =
 
 ;;
 
+let len = Sys.argv.(1) |> int_of_string
+
+(*
+let main () =
+  run_parser ~input:(String.make len '1')
+
+let _ = main ()
+*)
+
 let r = 
-  run_parser ~input:"111" 
+  run_parser ~input:(String.make len '1')
   |> extract_results 
   |> results_to_string 
   |> fun rs ->
