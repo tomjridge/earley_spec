@@ -21,11 +21,11 @@ module Make(S:S) = struct
   (* complete and blocked maps are from k,S *)
   type 'a map_int_symbol
 
-  type ('item_set,'raw_item_set,'int_set) state = {
+  type ('item_set,'raw_item_set,'int_set,'blocked,'complete) state = {
     todo_done: 'item_set;
     todo: item list;
-    blocked: 'raw_item_set map_int_symbol;
-    complete: 'int_set map_int_symbol  (* map k,S -> j set *)
+    blocked: 'blocked;  (* map k,S -> raw_item set *)
+    complete: 'complete; (* map k,S -> j set *)
   }
 
   let step 
@@ -62,15 +62,17 @@ module Make(S:S) = struct
             |> fun x -> Some x)
       | Cut_blocked blocked_item -> (
           let (k,_S) = (blocked_item.k, List.hd blocked_item.bs) in
-          complete_ops.map_find (k,_S) s.complete |> fun js ->
-          js 
-          |> int_set_to_list
-          |> Tjr_list.with_each_elt
-            ~init_state:s
-            ~step:(fun ~state j ->
-                let new_item = cut blocked_item j in
-                add_item new_item s)
-          |> fun s -> Some s)
+          complete_ops.map_find (k,_S) s.complete |> function
+          | None -> Some s
+          | Some js -> 
+            js
+            |> int_set_to_list
+            |> Tjr_list.with_each_elt
+              ~init_state:s
+              ~step:(fun ~state j ->
+                  let new_item = cut blocked_item j in
+                  add_item new_item s)
+            |> fun s -> Some s)
       | Expand (i,_S) -> (expand (i,_S) s)  
       | Raw itm ->
         match itm.bs with
@@ -134,10 +136,28 @@ let add_item itm s =
 
 let cut itm j = 
   match itm.bs with
-  | _S::bs -> { itm with as_=_S::itm.as_; bs; k=j }
+  | _S::bs -> Raw { itm with as_=_S::itm.as_; bs; k=j }
   | _ -> failwith ""
 
 
+(* specialize *)
+
+let step = 
+  step
+    ~item_set_ops 
+    ~raw_set_ops 
+    ~raw_set_to_list 
+    ~complete_ops
+    ~blocked_ops 
+    ~int_set_ops
+    ~int_set_to_list
+    ~add_item 
+    ~cut 
+
+
+
+
+(* NOTE following is dependent on the grammar *)
 let expand (k,_S) s = 
   match _S with
   | TM tm -> failwith "FIXME"
