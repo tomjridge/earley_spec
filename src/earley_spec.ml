@@ -260,13 +260,13 @@ E -> i,as,k,bs
 i \in {0..n}
 k \in {i..n}
 as \in { [], [E], [E E], [E E E] }
-bs \in { [], [E], [E E], [E E E] }
+bs is determined by as
 
 Number possibilities: 
 
-  Sigma_{i=0}^{i=n} (n-i+1) * 4 * 4
+  Sigma_{i=0}^{i=n} (n-i+1) * 4
 
-= 16 * Sigma (n-i+1)
+= 4 * Sigma (n-i+1)
 
 = O(n^2)
 
