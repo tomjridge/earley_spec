@@ -1,0 +1,6 @@
+name="earley_spec"
+description="Simple Earley spec/code"
+version="2018-02-13"
+requires="tjr_lib,ppx_deriving_yojson"
+archive(byte)="earley_spec.cma"
+archive(native)="earley_spec.cmxa"
