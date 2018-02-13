@@ -77,7 +77,7 @@ let step
             ~init_state:s
             ~step:(fun ~state blocked_item ->
                 let new_item = Raw(cut blocked_item j) in
-                add_item new_item s)
+                add_item new_item state)
           |> fun x -> Some x)
     | Cut_blocked blocked_item -> (
         let (k,_S) = (blocked_item.k, List.hd blocked_item.bs) in
@@ -102,7 +102,7 @@ let step
             ~init_state:s
             ~step:(fun ~state j ->
                 let new_item = Raw(cut blocked_item j) in
-                add_item new_item s)
+                add_item new_item state)
           |> fun s -> Some s)
     | Expand (i,_S) -> Some(expand (i,_S) s)  
     | Raw itm ->
@@ -208,3 +208,68 @@ let results_to_string rs =
   rs |> results_to_yojson |> Yojson.Safe.pretty_to_string 
 
 
+module Example_grammar = struct
+
+  (* example grammar -------------------------------------------------- *)
+
+  let _E = 99
+  let _1 = 1
+  let eps = 0
+
+  let expand_nt (i,_X) s = 
+    let new_items = 
+      if _X = _E then 
+        [[NT _E;NT _E;NT _E];[TM _1];[TM eps]]
+      else 
+        failwith __LOC__
+    in
+    new_items 
+    |> List.map (fun bs -> Raw {nt=_E;i;as_=[];k=i;bs})
+    |> fun itms ->
+    Tjr_list.with_each_elt
+      ~step:(fun ~state itm -> add_item itm state)
+      ~init_state:s
+      itms
+
+  let expand_tm ~input (i,_T) s = 
+    match _T with
+    | _ when _T = _1 ->
+      if i < String.length input && String.get input i = '1' then 
+        add_item (Cut_complete (i,TM _T,i+1)) s
+      else s
+    | _ when _T = eps ->
+      add_item (Cut_complete (i,TM _T,i)) s
+    | _ -> failwith __LOC__
+
+  let expand ~input (i,_S) s = 
+    match _S with
+    | TM _T -> expand_tm ~input (i,_T) s
+    | NT _X -> expand_nt (i,_X) s
+
+  let run_parser ~input = run_parser ~input ~expand:(expand ~input) ~init_nonterm:_E
+
+
+(*
+
+* Characterization of raw items with input length n
+
+Let's restrict to nonterminal raw items, derivied from E -> E E E.
+
+E -> i,as,k,bs
+
+i \in {0..n}
+k \in {i..n}
+as \in { [], [E], [E E], [E E E] }
+bs \in { [], [E], [E E], [E E E] }
+
+Number possibilities: 
+
+  Sigma_{i=0}^{i=n} (n-i+1) * 4 * 4
+
+= 16 * Sigma (n-i+1)
+
+= O(n^2)
+
+*)
+
+end
