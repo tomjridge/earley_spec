@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>staged.ml</title>
+<meta name="generator" content="emacs 25.1.1; htmlfontify 0.21" />
+<style type="text/css"><!-- 
+body { font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  color: #000000;  background: #ffffff;  font-size: 10pt;  text-decoration: none; }
+span.default   { font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  color: #000000;  background: #ffffff;  font-size: 10pt;  text-decoration: none; }
+span.default a { font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  color: #000000;  background: #ffffff;  font-size: 10pt;  text-decoration: underline; }
+span.string   { color: #8b2252;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: none; }
+span.string a { color: #8b2252;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: underline; }
+span.builtin   { color: #483d8b;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: none; }
+span.builtin a { color: #483d8b;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: underline; }
+span.constructor   { font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  color: #000000;  background: #ffffff;  font-size: 10pt;  text-decoration: none; }
+span.constructor a { font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  color: #000000;  background: #ffffff;  font-size: 10pt;  text-decoration: underline; }
+span.keyword   { color: #a020f0;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: none; }
+span.keyword a { color: #a020f0;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: underline; }
+span.variable-name   { color: #a0522d;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: none; }
+span.variable-name a { color: #a0522d;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: underline; }
+span.function-name   { color: #0000ff;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: none; }
+span.function-name a { color: #0000ff;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: underline; }
+span.constant   { color: #008b8b;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: none; }
+span.constant a { color: #008b8b;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: underline; }
+span.type   { color: #228b22;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: none; }
+span.type a { color: #228b22;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: underline; }
+span.operator   { color: #a52a2a;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: none; }
+span.operator a { color: #a52a2a;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: underline; }
+span.module   { color: #228b22;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: none; }
+span.module a { color: #228b22;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: underline; }
+span.governing   { color: #000000;  font-weight: 700;  font-family: Ubuntu Mono;  font-stretch: normal;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: none; }
+span.governing a { color: #000000;  font-weight: 700;  font-family: Ubuntu Mono;  font-stretch: normal;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: underline; }
+span.comment   { color: #b22222;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: none; }
+span.comment a { color: #b22222;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: underline; }
+span.comment-delimiter   { color: #b22222;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: none; }
+span.comment-delimiter a { color: #b22222;  font-family: Ubuntu Mono;  font-stretch: normal;  font-weight: 500;  font-style: normal;  background: #ffffff;  font-size: 10pt;  text-decoration: underline; }
+ --></style>
+
+    <script type="text/javascript"><!--
+  // this function is needed to work around
+  // a bug in IE related to element attributes
+  function hasClass(obj)
+  {
+      var result = false;
+      if (obj.getAttributeNode("class") != null)
+      {
+          result = obj.getAttributeNode("class").value;
+      }
+      return result;
+  }
+
+  function stripe(id)
+  {
+      // the flag we'll use to keep track of
+      // whether the current row is odd or even
+      var even = false;
+
+      // if arguments are provided to specify the colors
+      // of the even & odd rows, then use the them;
+      // otherwise use the following defaults:
+      var evenColor = arguments[1] ? arguments[1] : "#fff";
+      var oddColor  = arguments[2] ? arguments[2] : "#ddd";
+
+      // obtain a reference to the desired table
+      // if no such table exists, abort
+      var table = document.getElementById(id);
+      if (! table) { return; }
+
+      // by definition, tables can have more than one tbody
+      // element, so we'll have to get the list of child
+      // &lt;tbody&gt;s
+      var tbodies = table.getElementsByTagName("tbody");
+
+      // and iterate through them...
+      for (var h = 0; h < tbodies.length; h++)
+      {
+          // find all the &lt;tr&gt; elements...
+          var trs = tbodies[h].getElementsByTagName("tr");
+
+          // ... and iterate through them
+          for (var i = 0; i < trs.length; i++)
+          {
+              // avoid rows that have a class attribute
+              // or backgroundColor style
+              if (! hasClass(trs[i]) &&
+                  ! trs[i].style.backgroundColor)
+              {
+                  // get all the cells in this row...
+                  var tds = trs[i].getElementsByTagName("td");
+
+                  // and iterate through them...
+                  for (var j = 0; j < tds.length; j++)
+                  {
+                      var mytd = tds[j];
+
+                      // avoid cells that have a class attribute
+                      // or backgroundColor style
+                      if (! hasClass(mytd) &&
+                          ! mytd.style.backgroundColor)
+                      {
+                          mytd.style.backgroundColor =
+                            even ? evenColor : oddColor;
+                      }
+                  }
+              }
+              // flip from odd to even, or vice-versa
+              even =  ! even;
+          }
+      }
+  }
+
+  function toggle_invis( name )
+  {
+      var filter =
+        { acceptNode:
+          function( node )
+          { var classname = node.id;
+            if( classname )
+            { var classbase = classname.substr( 0, name.length );
+              if( classbase == name ) { return NodeFilter.FILTER_ACCEPT; } }
+            return NodeFilter.FILTER_SKIP; } };
+      var walker = document.createTreeWalker( document.body           ,
+                                              NodeFilter.SHOW_ELEMENT ,
+                                              filter                  ,
+                                              false                   );
+      while( walker.nextNode() )
+      {
+          var e = walker.currentNode;
+          if( e.style.display == "none" ) { e.style.display = "inline"; }
+          else                            { e.style.display = "none";   }
+      }
+  }
+--> </script>
+  </head>
+  <body onload="stripe('index'); return true;">
+
+<pre><span class="comment-delimiter">(* </span><span class="comment">TODO:</span><span class="comment">
+</span><span class="comment">
+   use imperative hashmaps as set and map implementations </span><span class="comment">
+</span><span class="comment">
+   test with a default implementation</span><span class="comment">
+</span><span class="comment">
+   replace all type ascriptions with named args</span><span class="comment">
+   </span><span class="comment">
+</span><span class="comment-delimiter">*)</span>
+
+<span class="comment-delimiter">(* </span><span class="comment">all maps are &quot;with default&quot; ie to option, or empty set; no</span><span class="comment">
+   exceptions thrown; so we need different map_ops for each map (since</span><span class="comment">
+   map_int may need two different defaults), or else take a default</span><span class="comment">
+   param FIXME add defaults to maps, or options</span><span class="comment-delimiter">*)</span>
+<span class="governing">module</span> <span class="governing">type</span> <span class="module">Map_</span> <span class="operator">=</span> <span class="governing">sig</span>
+  <span class="governing">type</span> <span class="type">k_</span>
+  <span class="governing">type</span> <span class="type">'v map_</span>
+  <span class="governing">type</span> <span class="type">'v ops</span> <span class="operator">=</span> <span class="operator">{</span>
+    find<span class="operator">:</span> k_ <span class="operator">-&gt;</span> 'v map_ <span class="operator">-&gt;</span> 'v<span class="operator">;</span>
+    <span class="comment-delimiter">(* </span><span class="comment">FIXME following is preferred type? Stick with find for now,</span><span class="comment">
+       with specialized defaults </span><span class="comment-delimiter">*)</span>
+    find'<span class="operator">:</span> 'a. k_ <span class="operator">-&gt;</span> <span class="constant">_Some</span><span class="operator">:(</span>'v <span class="operator">-&gt;</span> 'a<span class="operator">)</span> <span class="operator">-&gt;</span> <span class="constant">_None</span><span class="operator">:(</span>unit <span class="operator">-&gt;</span> 'a<span class="operator">)</span> <span class="operator">-&gt;</span> 'v map_ <span class="operator">-&gt;</span> 'a<span class="operator">;</span>
+    add<span class="operator">:</span> k_ <span class="operator">-&gt;</span> 'v <span class="operator">-&gt;</span> 'v map_ <span class="operator">-&gt;</span> 'v map_<span class="operator">;</span>
+    empty<span class="operator">:</span> 'v map_<span class="operator">;</span>
+    remove<span class="operator">:</span> k_ <span class="operator">-&gt;</span> 'v map_ <span class="operator">-&gt;</span> 'v map_
+  <span class="operator">}</span>
+<span class="governing">end</span>
+
+<span class="governing">module</span> <span class="governing">type</span> <span class="module">Set_</span> <span class="operator">=</span> <span class="governing">sig</span>
+  <span class="governing">type</span> <span class="type">elt</span>
+  <span class="governing">type</span> <span class="type">set</span>
+  <span class="governing">type</span> <span class="type">ops</span> <span class="operator">=</span> <span class="operator">{</span>
+    empty<span class="operator">:</span> set<span class="operator">;</span>
+    is_empty<span class="operator">:</span> set <span class="operator">-&gt;</span> bool<span class="operator">;</span>
+    add<span class="operator">:</span> elt <span class="operator">-&gt;</span> set <span class="operator">-&gt;</span> set<span class="operator">;</span>
+    mem<span class="operator">:</span> elt <span class="operator">-&gt;</span> set <span class="operator">-&gt;</span> bool<span class="operator">;</span>
+    with_each_elt<span class="operator">:</span> 'a. f<span class="operator">:(</span><span class="constant">state</span><span class="operator">:</span>'a <span class="operator">-&gt;</span> elt <span class="operator">-&gt;</span> 'a<span class="operator">)</span> <span class="operator">-&gt;</span> <span class="constant">init_state</span><span class="operator">:</span>'a <span class="operator">-&gt;</span> set <span class="operator">-&gt;</span> 'a<span class="operator">;</span>
+    elements<span class="operator">:</span> set <span class="operator">-&gt;</span> elt list<span class="operator">;</span>
+  <span class="operator">}</span>
+<span class="governing">end</span>
+
+
+
+<span class="governing">module</span> <span class="module">List_</span> <span class="operator">=</span> <span class="governing">struct</span>
+
+<span class="governing">let</span> <span class="function-name">fold_left_</span><span class="variable-name"> </span><span class="operator">~</span><span class="variable-name">step </span><span class="operator">~</span><span class="variable-name">init_state xs</span> <span class="operator">=</span> 
+  <span class="module">List.</span>fold_left 
+    <span class="operator">(</span><span class="keyword">fun</span> <span class="variable-name">a b</span> <span class="operator">-&gt;</span> step <span class="constant">~state</span><span class="operator">:</span>a b<span class="operator">)</span>
+    init_state
+    xs
+
+<span class="governing">let</span> <span class="variable-name">with_each_elt</span> <span class="operator">=</span> fold_left_
+<span class="governing">end</span>
+
+
+<span class="governing">let</span> <span class="function-name">bool_case</span><span class="variable-name"> </span><span class="operator">~</span><span class="variable-name">true_ </span><span class="operator">~</span><span class="variable-name">false_ x</span> <span class="operator">=</span> <span class="operator">(</span>
+  <span class="keyword">match</span> x <span class="keyword">with</span> 
+  <span class="operator">|</span> <span class="constant">true</span> <span class="operator">-&gt;</span> true_ <span class="operator">()</span>
+  <span class="operator">|</span> <span class="constant">false</span> <span class="operator">-&gt;</span> false_ <span class="operator">()</span>
+<span class="operator">)</span>
+
+<span class="governing">let</span> <span class="variable-name">_</span> <span class="operator">=</span> bool_case
+
+<span class="governing">module</span> <span class="governing">type</span> <span class="module">S_</span> <span class="operator">=</span> <span class="governing">sig</span>
+  <span class="governing">type</span> <span class="type">i_t</span> <span class="operator">=</span> int
+  <span class="governing">type</span> <span class="type">k_t</span> <span class="operator">=</span> int
+  <span class="governing">type</span> <span class="type">j_t</span> <span class="operator">=</span> int
+  <span class="governing">type</span> <span class="type">nt</span>
+  <span class="governing">type</span> <span class="type">tm</span>
+  <span class="governing">type</span> <span class="type">sym</span>
+  <span class="governing">val</span> <span class="function-name">sym_case</span><span class="operator">:</span> <span class="constant">nt</span><span class="operator">:(</span>nt <span class="operator">-&gt;</span> 'a<span class="operator">)</span> <span class="operator">-&gt;</span> <span class="constant">tm</span><span class="operator">:(</span>tm <span class="operator">-&gt;</span> 'a<span class="operator">)</span> <span class="operator">-&gt;</span> sym <span class="operator">-&gt;</span> 'a
+  <span class="governing">val</span> <span class="function-name">_NT</span><span class="operator">:</span> nt <span class="operator">-&gt;</span> sym
+
+  <span class="governing">type</span> <span class="type">nt_item</span> <span class="operator">=</span> <span class="operator">{</span>
+    nt<span class="operator">:</span> nt<span class="operator">;</span>
+    i<span class="operator">:</span> i_t<span class="operator">;</span>
+    as_<span class="operator">:</span> sym list<span class="operator">;</span>  <span class="comment-delimiter">(* </span><span class="comment">NOTE in &quot;reversed&quot; order </span><span class="comment-delimiter">*)</span>
+    k<span class="operator">:</span> k_t<span class="operator">;</span>
+    bs<span class="operator">:</span> sym list
+  <span class="operator">}</span>
+
+  <span class="governing">module</span> <span class="module">Set_nt_item</span> <span class="operator">:</span> <span class="module">Set_</span> <span class="governing">with type</span> <span class="type">elt</span><span class="operator">=</span>nt_item
+  <span class="governing">type</span> <span class="type">nt_item_set</span> <span class="operator">=</span> <span class="module">Set_nt_item.</span>set
+  <span class="governing">val</span> <span class="function-name">nt_item_set_</span> <span class="operator">:</span> <span class="module">Set_nt_item.</span>ops
+
+  <span class="governing">type</span> <span class="type">ixk</span> <span class="operator">=</span> <span class="operator">(</span>i_t <span class="operator">*</span> nt<span class="operator">)</span>  <span class="comment-delimiter">(* </span><span class="comment">i X k </span><span class="comment-delimiter">*)</span>
+  <span class="governing">module</span> <span class="module">Set_ixk</span> <span class="operator">:</span> <span class="module">Set_</span> <span class="governing">with type</span> <span class="type">elt</span><span class="operator">=</span>ixk
+  <span class="governing">type</span> <span class="type">ixk_set</span> <span class="operator">=</span> <span class="module">Set_ixk.</span>set
+  <span class="governing">val</span> <span class="function-name">ixk_set</span> <span class="operator">:</span> <span class="module">Set_ixk.</span>ops
+
+
+  <span class="governing">module</span> <span class="module">Map_nt</span> <span class="operator">:</span> <span class="module">Map_</span> <span class="governing">with type</span> <span class="type">k_</span> <span class="operator">=</span> nt
+  <span class="governing">type</span> <span class="type">'a map_nt</span> <span class="operator">=</span> 'a <span class="module">Map_nt.</span>map_
+
+  <span class="governing">module</span> <span class="module">Map_int</span><span class="operator">:</span> <span class="module">Map_</span> <span class="governing">with type</span> <span class="type">k_</span> <span class="operator">=</span> int
+  <span class="governing">type</span> <span class="type">'a map_int</span> <span class="operator">=</span> 'a <span class="module">Map_int.</span>map_
+
+  <span class="governing">module</span> <span class="module">Map_tm</span><span class="operator">:</span> <span class="module">Map_</span> <span class="governing">with type</span> <span class="type">k_</span> <span class="operator">=</span> tm
+  <span class="governing">type</span> <span class="type">'a map_tm</span> <span class="operator">=</span> 'a <span class="module">Map_tm.</span>map_
+
+  <span class="comment-delimiter">(* </span><span class="comment">these have obvious defaults for find operation </span><span class="comment-delimiter">*)</span>
+  <span class="governing">val</span> <span class="function-name">map_int_</span> <span class="operator">:</span> nt_item_set <span class="module">Map_int.</span>ops
+  <span class="governing">val</span> <span class="function-name">map_tm_</span><span class="operator">:</span> <span class="operator">(</span>int list option<span class="operator">)</span> <span class="module">Map_tm.</span>ops
+  <span class="governing">val</span> <span class="function-name">map_nt_</span> <span class="operator">:</span> nt_item_set <span class="module">Map_nt.</span>ops
+
+
+<span class="governing">end</span>
+
+<span class="comment-delimiter">(* </span><span class="comment">FIXME do all this in a monad, with particular monadic ops? would
+   this improve readability? probably yes 
+
+   FIXME make eg find_ktjs etc take s.ktjs, not s?
+</span><span class="comment-delimiter">*)</span>
+<span class="governing">module</span> <span class="module">Make</span> <span class="operator">=</span> <span class="governing">functor</span> <span class="operator">(</span><span class="variable-name">S</span><span class="operator">:</span><span class="type">S_</span><span class="operator">)</span> <span class="operator">-&gt;</span> <span class="governing">struct</span>
+  <span class="governing">open </span><span class="module">S</span>
+  <span class="governing">open </span><span class="module">S.Map_nt</span>
+  <span class="governing">open </span><span class="module">S.Map_int</span>
+  <span class="governing">open </span><span class="module">S.Map_tm</span>
+  <span class="governing">open </span><span class="module">S.Set_nt_item</span>
+  <span class="governing">open </span><span class="module">S.Set_ixk</span>
+
+  <span class="governing">open </span><span class="module">Profile</span>
+
+  <span class="governing">type</span> <span class="type">bitms_at_k</span> <span class="operator">=</span> nt_item_set map_nt  <span class="comment-delimiter">(* </span><span class="comment">bitms blocked at k,X </span><span class="comment-delimiter">*)</span>
+  <span class="comment-delimiter">(* </span><span class="comment">can use map_nt_ operations for at_k </span><span class="comment-delimiter">*)</span>
+
+  <span class="comment-delimiter">(* </span><span class="comment">map from int to map from nt to nt_item_set </span><span class="comment-delimiter">*)</span>
+  <span class="governing">type</span> <span class="type">bitms_lt_k</span> <span class="operator">=</span> <span class="operator">(</span>nt_item_set map_nt<span class="operator">)</span> option array
+
+  <span class="governing">module</span> <span class="module">Blocked_map</span> <span class="operator">=</span> <span class="governing">struct</span>
+    <span class="governing">type</span> <span class="type">t</span> <span class="operator">=</span> bitms_lt_k
+    <span class="governing">let</span> <span class="function-name">empty</span> <span class="operator">:</span> <span class="type">int </span><span class="operator">-&gt;</span><span class="type"> t </span><span class="operator">=</span> <span class="keyword">fun</span> <span class="variable-name">len</span> <span class="operator">-&gt;</span> <span class="module">Array.</span>make <span class="operator">(</span>len<span class="operator">+</span>2<span class="operator">)</span> <span class="constructor">None</span>
+    <span class="governing">let</span> <span class="variable-name">find</span> <span class="operator">:</span> <span class="operator">(</span><span class="type">k_t </span><span class="operator">*</span><span class="type"> nt</span><span class="operator">)</span><span class="type"> </span><span class="operator">-&gt;</span><span class="type"> bitms_lt_k </span><span class="operator">-&gt;</span><span class="type"> nt_item_set </span><span class="operator">=</span> <span class="operator">(</span>
+      <span class="keyword">fun</span> <span class="operator">(</span><span class="variable-name">k</span><span class="operator">,</span><span class="variable-name">nt</span><span class="operator">)</span><span class="variable-name"> t</span> <span class="operator">-&gt;</span> 
+        <span class="governing">let</span> <span class="variable-name">map</span> <span class="operator">=</span> dest_Some <span class="operator">(</span><span class="module">Array.</span>get t k<span class="operator">)</span> <span class="governing">in</span>
+        map_nt_.find nt map 
+    <span class="operator">)</span>
+    <span class="governing">let</span> <span class="variable-name">add</span><span class="operator">:</span> <span class="type">t </span><span class="operator">-&gt;</span><span class="type"> k_t </span><span class="operator">-&gt;</span><span class="type"> bitms_at_k </span><span class="operator">-&gt;</span><span class="type"> t </span><span class="operator">=</span> <span class="operator">(</span>
+      <span class="keyword">fun</span> <span class="variable-name">s0 k bitms</span> <span class="operator">-&gt;</span> <span class="module">Array.</span>set s0 k <span class="operator">(</span><span class="constructor">Some</span><span class="operator">(</span>bitms<span class="operator">));</span> s0<span class="operator">)</span>
+
+  <span class="governing">end</span>
+
+  <span class="governing">type</span> <span class="type">state_t</span> <span class="operator">=</span> <span class="operator">{</span>
+    k<span class="operator">:</span> int<span class="operator">;</span>
+    todo<span class="operator">:</span> nt_item list<span class="operator">;</span>
+    todo_done<span class="operator">:</span> nt_item_set<span class="operator">;</span>
+    todo_gt_k<span class="operator">:</span> nt_item_set map_int<span class="operator">;</span>
+    ixk_done<span class="operator">:</span> ixk_set<span class="operator">;</span>  <span class="comment-delimiter">(* </span><span class="comment">i X k </span><span class="comment-delimiter">*)</span>
+    ktjs<span class="operator">:</span> int list option map_tm<span class="operator">;</span>  <span class="comment-delimiter">(* </span><span class="comment">k T j </span><span class="comment-delimiter">*)</span>
+    bitms_lt_k<span class="operator">:</span> bitms_lt_k<span class="operator">;</span>
+    bitms_at_k<span class="operator">:</span> bitms_at_k<span class="operator">;</span>
+    all_done<span class="operator">:</span> nt_item_set list<span class="operator">;</span>
+  <span class="operator">}</span>
+
+  <span class="governing">let</span> <span class="variable-name">bitms</span><span class="operator">:</span> <span class="type">state_t </span><span class="operator">-&gt;</span><span class="type"> </span><span class="operator">(</span><span class="type">k_t </span><span class="operator">*</span><span class="type"> nt</span><span class="operator">)</span><span class="type"> </span><span class="operator">-&gt;</span><span class="type"> nt_item_set </span><span class="operator">=</span> <span class="operator">(</span>
+    <span class="keyword">fun</span> <span class="variable-name">s0 </span><span class="operator">(</span><span class="variable-name">k</span><span class="operator">,</span><span class="variable-name">x</span><span class="operator">)</span> <span class="operator">-&gt;</span>
+      <span class="keyword">match</span> <span class="operator">(</span>k<span class="operator">=</span>s0.k<span class="operator">)</span> <span class="keyword">with</span>
+      <span class="operator">|</span> <span class="constant">true</span> <span class="operator">-&gt;</span> <span class="operator">(</span>s0.bitms_at_k <span class="operator">|&gt;</span> map_nt_.find x<span class="operator">)</span>
+      <span class="operator">|</span> <span class="constant">false</span> <span class="operator">-&gt;</span> <span class="operator">(</span><span class="module">Blocked_map.</span>find <span class="operator">(</span>k<span class="operator">,</span>x<span class="operator">)</span> s0.bitms_lt_k<span class="operator">))</span>
+
+  <span class="comment-delimiter">(* </span><span class="comment">nt_item blocked on nt at k </span><span class="comment-delimiter">*)</span>
+  <span class="governing">let</span> <span class="variable-name">add_bitm_at_k</span><span class="operator">:</span> <span class="type">nt_item </span><span class="operator">-&gt;</span><span class="type"> nt </span><span class="operator">-&gt;</span><span class="type"> state_t </span><span class="operator">-&gt;</span><span class="type"> state_t </span><span class="operator">=</span>
+    <span class="keyword">fun</span> <span class="variable-name">nitm nt s0</span> <span class="operator">-&gt;</span>
+      <span class="operator">{</span> s0 <span class="keyword">with</span>
+        bitms_at_k <span class="operator">=</span> <span class="operator">(</span>
+          <span class="governing">let</span> <span class="variable-name">m</span> <span class="operator">=</span> s0.bitms_at_k <span class="governing">in</span>
+          <span class="governing">let</span> <span class="variable-name">s</span> <span class="operator">=</span> map_nt_.find nt m <span class="governing">in</span>
+          <span class="governing">let</span> <span class="variable-name">s'</span> <span class="operator">=</span> nt_item_set_.add nitm s <span class="governing">in</span>
+          <span class="governing">let</span> <span class="variable-name">m'</span> <span class="operator">=</span> map_nt_.add nt s' m <span class="governing">in</span>
+          m' <span class="operator">)</span> <span class="operator">}</span>
+
+  <span class="governing">let</span> <span class="function-name">pop_todo</span><span class="variable-name"> s0</span> <span class="operator">=</span> <span class="operator">(</span>
+    <span class="keyword">match</span> s0.todo <span class="keyword">with</span>
+    <span class="operator">|</span> x<span class="operator">::</span>xs <span class="operator">-&gt;</span> <span class="operator">(</span>x<span class="operator">,{</span>s0 <span class="keyword">with</span> todo<span class="operator">=</span>xs<span class="operator">})</span>
+    <span class="operator">|</span> _ <span class="operator">-&gt;</span> <span class="operator">(</span><span class="builtin">failwith</span> <span class="string">&quot;pop_todo&quot;</span><span class="operator">))</span>
+
+  <span class="governing">let</span> <span class="variable-name">cut</span><span class="operator">:</span> <span class="type">nt_item </span><span class="operator">-&gt;</span><span class="type"> j_t </span><span class="operator">-&gt;</span><span class="type"> nt_item </span><span class="operator">=</span> <span class="operator">(</span>
+    <span class="keyword">fun</span> <span class="variable-name">bitm j0</span> <span class="operator">-&gt;</span> <span class="operator">(</span>
+        <span class="governing">let</span> <span class="variable-name">as_</span> <span class="operator">=</span> <span class="operator">(</span><span class="module">List.</span>hd bitm.bs<span class="operator">)::</span>bitm.as_ <span class="governing">in</span>
+        <span class="governing">let</span> <span class="variable-name">bs</span> <span class="operator">=</span> <span class="module">List.</span>tl bitm.bs <span class="governing">in</span>
+        <span class="governing">let</span> <span class="variable-name">k</span> <span class="operator">=</span> j0 <span class="governing">in</span>
+        <span class="governing">let</span> <span class="variable-name">nitm</span> <span class="operator">={</span>bitm <span class="keyword">with</span> k<span class="operator">;</span>as_<span class="operator">;</span>bs<span class="operator">}</span> <span class="governing">in</span>
+        nitm <span class="operator">))</span>
+
+  <span class="comment-delimiter">(* </span><span class="comment">k is the current stage </span><span class="comment-delimiter">*)</span>
+  <span class="comment-delimiter">(* </span><span class="comment">FIXME avoid cost of double lookup by using new ocaml sets with
+     boolean rv </span><span class="comment-delimiter">*)</span>
+  <span class="governing">let</span> <span class="function-name">add_todo</span><span class="operator">:</span> <span class="type">nt_item </span><span class="operator">-&gt;</span><span class="type"> state_t </span><span class="operator">-&gt;</span><span class="type"> state_t </span><span class="operator">=</span> <span class="keyword">fun</span> <span class="variable-name">nitm s0</span> <span class="operator">-&gt;</span>
+    <span class="governing">let</span> <span class="variable-name">k</span> <span class="operator">=</span> s0.k <span class="governing">in</span>
+    <span class="keyword">match</span> nitm.k <span class="operator">&gt;</span> k <span class="keyword">with</span>
+    <span class="operator">|</span> <span class="constant">true</span> <span class="operator">-&gt;</span> <span class="operator">(</span>
+        <span class="governing">let</span> <span class="variable-name">nitms</span> <span class="operator">=</span> map_int_.find nitm.k s0.todo_gt_k <span class="governing">in</span>
+        <span class="governing">let</span> <span class="variable-name">nitms</span> <span class="operator">=</span> nt_item_set_.add nitm nitms <span class="governing">in</span>
+        <span class="operator">{</span> s0 <span class="keyword">with</span> todo_gt_k<span class="operator">=(</span>map_int_.add nitm.k nitms s0.todo_gt_k<span class="operator">)})</span>
+    <span class="operator">|</span> <span class="constant">false</span> <span class="operator">-&gt;</span> <span class="operator">(</span>
+        <span class="keyword">match</span> nt_item_set_.mem nitm s0.todo_done <span class="keyword">with</span>
+        <span class="operator">|</span> <span class="constant">true</span> <span class="operator">-&gt;</span> s0
+        <span class="operator">|</span> <span class="constant">false</span> <span class="operator">-&gt;</span> <span class="operator">(</span>
+            <span class="operator">{</span> s0 <span class="keyword">with</span> todo<span class="operator">=(</span>nitm<span class="operator">::</span>s0.todo<span class="operator">);</span>
+                      todo_done<span class="operator">=</span>nt_item_set_.add nitm s0.todo_done<span class="operator">}))</span>
+
+  <span class="governing">let</span> <span class="variable-name">add_ixk_done</span><span class="operator">:</span> <span class="type">ixk </span><span class="operator">-&gt;</span><span class="type"> state_t </span><span class="operator">-&gt;</span><span class="type"> state_t </span><span class="operator">=</span>
+    <span class="keyword">fun</span> <span class="variable-name">ix s0</span> <span class="operator">-&gt;</span> <span class="operator">{</span> s0 <span class="keyword">with</span> ixk_done<span class="operator">=(</span>ixk_set.add ix s0.ixk_done<span class="operator">)}</span>
+
+  <span class="governing">let</span> <span class="variable-name">mem_ixk_done</span><span class="operator">:</span> <span class="type">ixk </span><span class="operator">-&gt;</span><span class="type"> state_t </span><span class="operator">-&gt;</span><span class="type"> bool </span><span class="operator">=</span>
+    <span class="keyword">fun</span> <span class="variable-name">ix s0</span> <span class="operator">-&gt;</span> ixk_set.mem ix s0.ixk_done 
+
+  <span class="governing">let</span> <span class="variable-name">find_ktjs</span><span class="operator">:</span> <span class="type">tm </span><span class="operator">-&gt;</span><span class="type"> state_t </span><span class="operator">-&gt;</span><span class="type"> int list option </span><span class="operator">=</span>
+    <span class="keyword">fun</span> <span class="variable-name">t s0</span> <span class="operator">-&gt;</span> map_tm_.find t s0.ktjs
+
+  <span class="governing">let</span> <span class="variable-name">counter</span> <span class="operator">=</span> <span class="builtin">ref</span> 0
+
+  
+  <span class="governing">let</span> <span class="function-name">in_ctxt</span><span class="variable-name"> ctxt</span> <span class="operator">=</span> <span class="governing">begin</span>
+    ctxt <span class="operator">@@</span> <span class="keyword">fun</span> <span class="operator">~</span><span class="variable-name">new_items </span><span class="operator">~</span><span class="variable-name">input </span><span class="operator">~</span><span class="variable-name">parse_tm </span><span class="operator">~</span><span class="variable-name">input_length 
+</span>      <span class="operator">~</span>debug_enabled <span class="operator">~</span>debug_endline <span class="operator">-&gt;</span> 
+
+    <span class="comment-delimiter">(* </span><span class="comment">step_k ------------------------------------------------------- </span><span class="comment-delimiter">*)</span>
+    <span class="governing">let</span> <span class="function-name">step_k</span><span class="variable-name"> s0</span> <span class="operator">=</span> <span class="governing">begin</span>
+      debug_endline <span class="string">&quot;XXXstep_k&quot;</span><span class="operator">;</span>
+      <span class="keyword">assert</span><span class="operator">(</span>log <span class="module">P.</span>ab<span class="operator">);</span>
+      <span class="governing">let</span> <span class="variable-name">_</span> <span class="operator">=</span> <span class="operator">(</span>
+        counter<span class="operator">:=</span>1 <span class="operator">+</span> <span class="operator">!</span>counter<span class="operator">;</span> 
+        <span class="keyword">if</span> <span class="operator">(!</span>counter <span class="operator">mod</span> 1000 <span class="operator">=</span> 0<span class="operator">)</span> <span class="keyword">then</span> <span class="module">Gc.</span>full_major<span class="operator">()</span> <span class="keyword">else</span> <span class="operator">()</span> <span class="operator">)</span>
+      <span class="governing">in</span>
+      <span class="keyword">assert</span><span class="operator">(</span>log <span class="module">P.</span>ac<span class="operator">);</span>
+      <span class="governing">let</span> <span class="variable-name">k</span> <span class="operator">=</span> s0.k <span class="governing">in</span>    
+      <span class="governing">let</span> <span class="variable-name">bitms</span> <span class="operator">=</span> bitms s0 <span class="governing">in</span>
+      <span class="governing">let</span> <span class="operator">(</span><span class="variable-name">nitm</span><span class="operator">,</span><span class="variable-name">s0</span><span class="operator">)</span> <span class="operator">=</span> pop_todo s0 <span class="governing">in</span>
+      <span class="governing">let</span> <span class="variable-name">nitm_complete</span> <span class="operator">=</span> nitm.bs <span class="operator">=</span> <span class="operator">[]</span> <span class="governing">in</span>
+      <span class="keyword">assert</span><span class="operator">(</span>log <span class="module">P.</span>bc<span class="operator">);</span>  
+      <span class="comment-delimiter">(* </span><span class="comment">NOTE waypoints before each split and at end of branch </span><span class="comment-delimiter">*)</span>
+      nitm_complete 
+      <span class="operator">|&gt;</span> bool_case
+        <span class="constant">~true_</span><span class="operator">:</span> <span class="operator">(</span><span class="keyword">fun</span> <span class="operator">()</span> <span class="operator">-&gt;</span>
+          <span class="governing">let</span> <span class="operator">(</span><span class="variable-name">i</span><span class="operator">,</span><span class="variable-name">x</span><span class="operator">)</span> <span class="operator">=</span> <span class="operator">(</span>nitm.i<span class="operator">,</span>nitm.nt<span class="operator">)</span> <span class="governing">in</span>
+          <span class="comment-delimiter">(* </span><span class="comment">possible NEW COMPLETE (i,X,k) </span><span class="comment-delimiter">*)</span>
+          <span class="governing">let</span> <span class="variable-name">already_done</span> <span class="operator">=</span> mem_ixk_done <span class="operator">(</span>i<span class="operator">,</span>x<span class="operator">)</span> s0 <span class="governing">in</span>
+          <span class="keyword">assert</span><span class="operator">(</span>log <span class="module">P.</span>cd<span class="operator">);</span>
+          already_done 
+          <span class="operator">|&gt;</span> bool_case
+            <span class="constant">~true_</span><span class="operator">:(</span><span class="keyword">fun</span> <span class="operator">()</span> <span class="operator">-&gt;</span> 
+              debug_endline <span class="string">&quot;already_done&quot;</span><span class="operator">;</span> 
+              s0<span class="operator">)</span>
+            <span class="constant">~false_</span><span class="operator">:(</span><span class="keyword">fun</span> <span class="operator">()</span> <span class="operator">-&gt;</span> 
+              debug_endline <span class="string">&quot;not already_done&quot;</span><span class="operator">;</span>
+              <span class="governing">let</span> <span class="variable-name">s0</span> <span class="operator">=</span> add_ixk_done <span class="operator">(</span>i<span class="operator">,</span>x<span class="operator">)</span> s0 <span class="governing">in</span>
+              <span class="comment-delimiter">(* </span><span class="comment">FIXME possible optimization if we work with Y -&gt;
+                   {h} as i X bs </span><span class="comment-delimiter">*)</span>
+              bitms <span class="operator">(</span>i<span class="operator">,</span>x<span class="operator">)</span>
+              <span class="operator">|&gt;</span> nt_item_set_.with_each_elt
+                <span class="constant">~f</span><span class="operator">:(</span><span class="keyword">fun</span> <span class="constant">~state</span><span class="operator">:</span><span class="variable-name">s bitm</span> <span class="operator">-&gt;</span> add_todo <span class="operator">(</span>cut bitm k<span class="operator">)</span> s<span class="operator">)</span>
+                <span class="constant">~init_state</span><span class="operator">:</span>s0
+              <span class="operator">|&gt;</span> <span class="keyword">fun</span> <span class="variable-name">s</span> <span class="operator">-&gt;</span>
+              <span class="keyword">assert</span><span class="operator">(</span>log <span class="module">P.</span>de<span class="operator">);</span>
+              s<span class="operator">))</span>
+        <span class="constant">~false_</span><span class="operator">:</span> <span class="operator">(</span><span class="keyword">fun</span> <span class="operator">()</span> <span class="operator">-&gt;</span> 
+          <span class="comment-delimiter">(* </span><span class="comment">NEW BLOCKED X -&gt; i as k (S bs') on k S; here S is _Y </span><span class="comment-delimiter">*)</span>
+          <span class="governing">let</span> <span class="variable-name">bitm</span> <span class="operator">=</span> nitm <span class="governing">in</span>
+          <span class="governing">let</span> <span class="variable-name">s</span> <span class="operator">=</span> <span class="module">List.</span>hd bitm.bs <span class="governing">in</span>
+          s 
+          <span class="operator">|&gt;</span> sym_case
+            <span class="constant">~nt</span><span class="operator">:(</span><span class="keyword">fun</span> <span class="variable-name">_Y</span> <span class="operator">-&gt;</span> 
+              <span class="comment-delimiter">(* </span><span class="comment">have we already processed k Y? </span><span class="comment-delimiter">*)</span>
+              <span class="governing">let</span> <span class="variable-name">bitms</span> <span class="operator">=</span> bitms <span class="operator">(</span>k<span class="operator">,</span>_Y<span class="operator">)</span> <span class="governing">in</span>
+              <span class="governing">let</span> <span class="variable-name">bitms_empty</span> <span class="operator">=</span> nt_item_set_.is_empty bitms <span class="governing">in</span>
+              <span class="comment-delimiter">(* </span><span class="comment">NOTE already_processed_kY = not bitms_empty </span><span class="comment-delimiter">*)</span>
+              <span class="governing">let</span> <span class="variable-name">s0</span> <span class="operator">=</span> add_bitm_at_k bitm _Y s0 <span class="governing">in</span>
+              <span class="keyword">assert</span><span class="operator">(</span>log <span class="module">P.</span>fg<span class="operator">);</span>
+              bitms_empty 
+              <span class="operator">|&gt;</span> bool_case
+                <span class="constant">~false_</span><span class="operator">:(</span><span class="keyword">fun</span> <span class="operator">()</span> <span class="operator">-&gt;</span> 
+                  <span class="comment-delimiter">(* </span><span class="comment">already processed k Y, so no need to expand; but
+                     may have complete item kYk </span><span class="comment-delimiter">*)</span>
+                  <span class="comment-delimiter">(* </span><span class="comment">FIXME when dpes kYk get added to ixk_done? </span><span class="comment-delimiter">*)</span>
+                  debug_endline <span class="string">&quot;not bitms_empty&quot;</span><span class="operator">;</span>
+                  mem_ixk_done <span class="operator">(</span>k<span class="operator">,</span>_Y<span class="operator">)</span> s0 <span class="operator">|&gt;</span> bool_case
+                    <span class="constant">~true_</span><span class="operator">:(</span><span class="keyword">fun</span> <span class="operator">()</span> <span class="operator">-&gt;</span> add_todo <span class="operator">(</span>cut bitm k<span class="operator">)</span> s0<span class="operator">)</span>
+                    <span class="constant">~false_</span><span class="operator">:(</span><span class="keyword">fun</span> <span class="operator">()</span> <span class="operator">-&gt;</span> s0<span class="operator">))</span>  <span class="comment-delimiter">(* </span><span class="comment">FIXME waypoint? </span><span class="comment-delimiter">*)</span>
+                <span class="constant">~true_</span><span class="operator">:(</span><span class="keyword">fun</span> <span class="operator">()</span> <span class="operator">-&gt;</span>
+                  <span class="comment-delimiter">(* </span><span class="comment">we have not processed k Y; expand sym Y </span><span class="comment-delimiter">*)</span>
+                  debug_endline <span class="string">&quot;bitms_empty&quot;</span><span class="operator">;</span>
+                  <span class="keyword">assert</span> <span class="operator">(</span>mem_ixk_done <span class="operator">(</span>k<span class="operator">,</span>_Y<span class="operator">)</span> s0 <span class="operator">=</span> <span class="constant">false</span><span class="operator">);</span>
+                  new_items <span class="constant">~nt</span><span class="operator">:</span>_Y <span class="operator">~</span>input <span class="operator">~</span>k 
+                  <span class="operator">|&gt;</span> <span class="module">List_.</span>with_each_elt 
+                    <span class="constant">~step</span><span class="operator">:(</span><span class="keyword">fun</span> <span class="constant">~state</span><span class="operator">:</span><span class="variable-name">s nitm</span> <span class="operator">-&gt;</span> add_todo nitm s<span class="operator">)</span> 
+                    <span class="constant">~init_state</span><span class="operator">:</span>s0
+                  <span class="operator">|&gt;</span> <span class="keyword">fun</span> <span class="variable-name">s</span> <span class="operator">-&gt;</span> 
+                  <span class="keyword">assert</span><span class="operator">(</span>log <span class="module">P.</span>gh<span class="operator">);</span>
+                  s<span class="operator">))</span>
+            <span class="constant">~tm</span><span class="operator">:(</span><span class="keyword">fun</span> <span class="variable-name">t</span> <span class="operator">-&gt;</span>
+              <span class="comment-delimiter">(* </span><span class="comment">have we already processed k T ? </span><span class="comment-delimiter">*)</span>
+              find_ktjs t s0 <span class="operator">|&gt;</span> <span class="keyword">fun</span> <span class="variable-name">ktjs</span> <span class="operator">-&gt;</span>
+              <span class="keyword">assert</span><span class="operator">(</span>log <span class="module">P.</span>hi<span class="operator">);</span>
+              ktjs 
+              <span class="operator">|&gt;</span> <span class="governing">begin</span> <span class="keyword">function</span> 
+                <span class="operator">|</span> <span class="constructor">None</span> <span class="operator">-&gt;</span> <span class="operator">(</span>
+                    <span class="comment-delimiter">(* </span><span class="comment">process k T </span><span class="comment-delimiter">*)</span>
+                    debug_endline <span class="string">&quot;ktjs None&quot;</span><span class="operator">;</span>
+                    debug_endline <span class="string">&quot;processing k T&quot;</span><span class="operator">;</span>
+                    <span class="governing">let</span> <span class="variable-name">js</span> <span class="operator">=</span> parse_tm <span class="constant">~tm</span><span class="operator">:</span>t <span class="operator">~</span>input <span class="operator">~</span>k <span class="operator">~</span>input_length <span class="governing">in</span>
+                    <span class="governing">let</span> <span class="variable-name">ktjs</span> <span class="operator">=</span> map_tm_.add t <span class="operator">(</span><span class="constructor">Some</span> js<span class="operator">)</span> s0.ktjs <span class="governing">in</span>
+                    <span class="operator">(</span>js<span class="operator">,{</span>s0 <span class="keyword">with</span> ktjs<span class="operator">}))</span>
+                <span class="operator">|</span> <span class="constructor">Some</span> js <span class="operator">-&gt;</span> <span class="operator">(</span>
+                    debug_endline <span class="string">&quot;ktjs Some&quot;</span><span class="operator">;</span> <span class="operator">(</span>js<span class="operator">,</span>s0<span class="operator">))</span> 
+              <span class="governing">end</span>
+              <span class="operator">|&gt;</span> <span class="keyword">fun</span> <span class="operator">(</span><span class="variable-name">js</span><span class="operator">,</span><span class="variable-name">s0</span><span class="operator">)</span> <span class="operator">-&gt;</span> 
+              <span class="keyword">assert</span><span class="operator">(</span>log <span class="module">P.</span>ij<span class="operator">);</span>
+              <span class="comment-delimiter">(* </span><span class="comment">process blocked; there is only one item blocked at
+                 this point </span><span class="comment-delimiter">*)</span>
+              js 
+              <span class="operator">|&gt;</span> <span class="module">List_.</span>with_each_elt
+                <span class="constant">~step</span><span class="operator">:(</span><span class="keyword">fun</span> <span class="constant">~state</span><span class="operator">:</span><span class="variable-name">s j</span> <span class="operator">-&gt;</span> add_todo <span class="operator">(</span>cut bitm j<span class="operator">)</span> s<span class="operator">)</span>
+                <span class="constant">~init_state</span><span class="operator">:</span>s0 
+              <span class="operator">|&gt;</span> <span class="keyword">fun</span> <span class="variable-name">s</span> <span class="operator">-&gt;</span> 
+              <span class="keyword">assert</span><span class="operator">(</span>log <span class="module">P.</span>jk<span class="operator">);</span>
+              s<span class="operator">))</span>
+    <span class="governing">end</span> <span class="comment-delimiter">(*  </span><span class="comment">step_k </span><span class="comment-delimiter">*)</span>
+    <span class="governing">in</span>
+
+
+    <span class="comment-delimiter">(* </span><span class="comment">loop_k: loop at k -------------------------------------------- </span><span class="comment-delimiter">*)</span>
+    <span class="governing">let</span> <span class="governing">rec</span> <span class="function-name">loop_k</span><span class="variable-name"> s0</span> <span class="operator">=</span> 
+      <span class="keyword">match</span> s0.todo <span class="keyword">with</span>
+      <span class="operator">|</span> <span class="operator">[]</span> <span class="operator">-&gt;</span> s0
+      <span class="operator">|</span> _ <span class="operator">-&gt;</span> loop_k <span class="operator">(</span>step_k s0<span class="operator">)</span>
+    <span class="governing">in</span>
+
+
+    <span class="comment-delimiter">(* </span><span class="comment">loop --------------------------------------------------------- </span><span class="comment-delimiter">*)</span>
+    <span class="comment-delimiter">(* </span><span class="comment">outer loop: repeatedly process items at stage k, then move to stage
+       k+1 </span><span class="comment-delimiter">*)</span>
+    <span class="governing">let</span> <span class="governing">rec</span> <span class="function-name">loop</span><span class="variable-name"> s0</span> <span class="operator">=</span> <span class="governing">begin</span>
+      <span class="keyword">match</span> s0.k <span class="operator">&gt;</span> input_length <span class="operator">+</span> 1 <span class="keyword">with</span>
+      <span class="operator">|</span> <span class="constant">true</span> <span class="operator">-&gt;</span> s0
+      <span class="operator">|</span> <span class="constant">false</span> <span class="operator">-&gt;</span> <span class="operator">(</span>
+          <span class="comment-delimiter">(* </span><span class="comment">process items </span><span class="comment-delimiter">*)</span>
+          <span class="governing">let</span> <span class="variable-name">s0</span> <span class="operator">=</span> loop_k s0 <span class="governing">in</span>
+          <span class="governing">let</span> <span class="variable-name">old_k</span> <span class="operator">=</span> s0.k <span class="governing">in</span>
+          <span class="governing">let</span> <span class="variable-name">k</span> <span class="operator">=</span> s0.k<span class="operator">+</span>1 <span class="governing">in</span>
+          <span class="governing">let</span> <span class="variable-name">todo</span> <span class="operator">=</span> map_int_.find k s0.todo_gt_k <span class="governing">in</span>
+          <span class="governing">let</span> <span class="variable-name">todo_done</span> <span class="operator">=</span> todo <span class="governing">in</span>
+          <span class="governing">let</span> <span class="variable-name">todo</span> <span class="operator">=</span> nt_item_set_.elements todo <span class="governing">in</span>
+          <span class="governing">let</span> <span class="variable-name">todo_gt_k</span> <span class="operator">=</span> <span class="operator">(</span>
+            <span class="comment-delimiter">(* </span><span class="comment">keep debug into around </span><span class="comment-delimiter">*)</span>
+            <span class="keyword">match</span> debug_enabled <span class="keyword">with</span> 
+            <span class="operator">|</span> <span class="constant">true</span> <span class="operator">-&gt;</span> s0.todo_gt_k 
+            <span class="operator">|</span> <span class="constant">false</span> <span class="operator">-&gt;</span> map_int_.remove k s0.todo_gt_k<span class="operator">)</span>
+          <span class="governing">in</span>
+          <span class="governing">let</span> <span class="variable-name">ixk_done</span> <span class="operator">=</span> ixk_set.empty <span class="governing">in</span>
+          <span class="governing">let</span> <span class="variable-name">ktjs</span> <span class="operator">=</span> map_tm_.empty <span class="governing">in</span>
+          <span class="governing">let</span> <span class="variable-name">bitms_lt_k</span> <span class="operator">=</span> <span class="operator">(</span>
+            <span class="comment-delimiter">(* </span><span class="comment">FIXME the following hints that bitms_lt_k should be a
+               map from k to a map from nt to ... since bitms_at_k is a
+               map from nt </span><span class="comment-delimiter">*)</span>
+            <span class="governing">let</span> <span class="variable-name">b_init</span> <span class="operator">=</span> s0.bitms_lt_k <span class="governing">in</span>
+            <span class="module">Blocked_map.</span>add b_init old_k s0.bitms_at_k<span class="operator">)</span>
+          <span class="governing">in</span>
+          <span class="governing">let</span> <span class="variable-name">bitms_at_k</span> <span class="operator">=</span> map_nt_.empty <span class="governing">in</span>
+          <span class="governing">let</span> <span class="variable-name">all_done</span> <span class="operator">=</span> s0.todo_done<span class="operator">::</span>s0.all_done <span class="governing">in</span>
+          <span class="governing">let</span> <span class="variable-name">s1</span> <span class="operator">=</span> <span class="operator">{</span>k<span class="operator">;</span>todo<span class="operator">;</span>todo_done<span class="operator">;</span>todo_gt_k<span class="operator">;</span>ixk_done<span class="operator">;</span>ktjs<span class="operator">;</span>bitms_lt_k<span class="operator">;</span>
+                    bitms_at_k<span class="operator">;</span>all_done<span class="operator">}</span> <span class="governing">in</span>
+          loop s1<span class="operator">)</span>
+    <span class="governing">end</span> <span class="comment-delimiter">(* </span><span class="comment">loop </span><span class="comment-delimiter">*)</span>
+    <span class="governing">in</span>
+
+    <span class="comment-delimiter">(* </span><span class="comment">staged: main entry point ------------------------------------- </span><span class="comment-delimiter">*)</span>
+
+    <span class="comment-delimiter">(* </span><span class="comment">construct initial context, apply loop </span><span class="comment-delimiter">*)</span>
+    <span class="governing">let</span> <span class="function-name">staged</span><span class="variable-name"> nt</span> <span class="operator">=</span> <span class="operator">(</span>
+      <span class="governing">let</span> <span class="operator">(</span><span class="variable-name">i</span><span class="operator">,</span><span class="variable-name">k</span><span class="operator">)</span> <span class="operator">=</span> <span class="operator">(</span>0<span class="operator">,</span>0<span class="operator">)</span> <span class="governing">in</span>
+      <span class="comment-delimiter">(* </span><span class="comment">this is a dummy item to get things going </span><span class="comment-delimiter">*)</span>
+      <span class="governing">let</span> <span class="variable-name">init</span> <span class="operator">=</span> <span class="operator">{</span>nt<span class="operator">;</span>i<span class="operator">;</span>as_<span class="operator">=[];</span>k<span class="operator">;</span>bs<span class="operator">=[</span>_NT nt<span class="operator">]}</span> <span class="governing">in</span> 
+      <span class="governing">let</span> <span class="variable-name">todo</span> <span class="operator">=</span> <span class="operator">[</span>init<span class="operator">]</span> <span class="governing">in</span>  
+      <span class="governing">let</span> <span class="variable-name">todo_done</span> <span class="operator">=</span> nt_item_set_.empty <span class="governing">in</span>
+      <span class="governing">let</span> <span class="variable-name">todo_gt_k</span> <span class="operator">=</span> map_int_.empty <span class="governing">in</span>
+      <span class="governing">let</span> <span class="variable-name">ixk_done</span> <span class="operator">=</span> ixk_set.empty <span class="governing">in</span>
+      <span class="governing">let</span> <span class="variable-name">ktjs</span> <span class="operator">=</span> map_tm_.empty <span class="governing">in</span>
+      <span class="governing">let</span> <span class="variable-name">bitms_lt_k</span> <span class="operator">=</span> <span class="module">Blocked_map.</span>empty input_length <span class="governing">in</span>
+      <span class="governing">let</span> <span class="variable-name">bitms_at_k</span> <span class="operator">=</span> map_nt_.empty <span class="governing">in</span>
+      <span class="governing">let</span> <span class="variable-name">all_done</span> <span class="operator">=</span> <span class="operator">[]</span> <span class="governing">in</span>
+      <span class="governing">let</span> <span class="variable-name">s0</span> <span class="operator">=</span> <span class="operator">{</span>k<span class="operator">;</span>todo<span class="operator">;</span>todo_done<span class="operator">;</span>todo_gt_k<span class="operator">;</span>ixk_done<span class="operator">;</span>ktjs<span class="operator">;</span>bitms_lt_k<span class="operator">;</span>
+                bitms_at_k<span class="operator">;</span>all_done<span class="operator">}</span> <span class="governing">in</span>
+      loop s0<span class="operator">)</span>
+    <span class="governing">in</span>
+
+    staged
+
+  <span class="governing">end</span>  <span class="comment-delimiter">(* </span><span class="comment">end in_ctxt </span><span class="comment-delimiter">*)</span>
+
+  <span class="governing">let</span> <span class="function-name">staged</span><span class="variable-name"> c nt</span> <span class="operator">=</span> in_ctxt c nt
+
+<span class="governing">end</span> <span class="comment-delimiter">(* </span><span class="comment">Make </span><span class="comment-delimiter">*)</span>
+</pre>
+
+ </body>
+</html>
