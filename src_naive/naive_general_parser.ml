@@ -1,24 +1,33 @@
 
-type k_t = int
-type i_t = int
-type j_t = int
+(* repeat till None, then return last state *)
+let rec iter_opt f s =
+  match f s with
+  | None -> s
+  | Some s -> iter_opt f s
 
-type nt = int
-type tm = int
-type sym = NT of nt | TM of tm
+
+(* types, prelude --------------------------------------------------- *)
+
+
+type nt = int  [@@deriving yojson]
+type tm = int  [@@deriving yojson]
+type sym = NT of nt | TM of tm  [@@deriving yojson]
 
 
 type nt_item = {
   nt: nt;
-  i: i_t;
+  i: int;
   as_: sym list;
-  k: k_t;
+  k: int;
   bs: sym list
-}
+}  [@@deriving yojson]
+
+type results = nt_item list  [@@deriving yojson]
+
 
 (* try to keep string_t separate from string *)
 type string_t
-type substring_t = (string_t * i_t * j_t)
+type substring_t = (string_t * int * int)
 
 let string_to_string_t: string -> string_t = (fun s -> Obj.magic s)
 let string_t_to_string: string_t -> string = (fun s -> Obj.magic s)
@@ -26,7 +35,7 @@ let string_t_to_string: string_t -> string = (fun s -> Obj.magic s)
 
 type grammar_t = {
   nt_items_for_nt: nt -> (string_t * int) -> nt_item list;
-  p_of_tm: tm -> substring_t -> k_t list
+  p_of_tm: tm -> substring_t -> int list
 }
 
 type input_t = {
@@ -34,13 +43,13 @@ type input_t = {
   len: int;
 }
 
-type ctxt_t = {
-  g0: grammar_t;
-  i0: input_t
+type context = {
+  grammar: grammar_t;
+  input: input_t
 }
 
 
-let cut: nt_item -> j_t -> nt_item = 
+let cut: nt_item -> int -> nt_item = 
   fun bitm j0 -> 
     let as_ = (List.hd bitm.bs)::bitm.as_ in
     let bs = List.tl bitm.bs in
@@ -49,12 +58,11 @@ let cut: nt_item -> j_t -> nt_item =
     nitm 
 
 
-type bitm_t = nt_item  (* bs <> [] *)
+type blocked_item = nt_item  (* bs <> [] *)
 
-type b_key_t = (k_t * sym)
+type key = (int * sym)
 
-let bitm_to_key: bitm_t -> b_key_t = (
-  fun bitm -> (bitm.k,List.hd bitm.bs))
+let bitm_to_key: blocked_item -> key = fun bitm -> (bitm.k,List.hd bitm.bs)
 
 let comp = Pervasives.compare
 
@@ -62,78 +70,83 @@ module Nt_item_set =
   Set.Make(struct type t = nt_item;; let compare: t -> t -> int = comp end)
 
 
-(* --------------------------------------------------------------------- *)
 
-type spec_item_t = nt_item
-
-module Spec_t = struct 
-  include Nt_item_set
-
-  (* for < 4.02.0 *)
-(*
-  let of_list: elt list -> t = (
-    fun xs -> 
-      List.fold_left (fun a b -> add b a) empty xs
-  )
-*)
-end
-
-type spec_t = Spec_t.t
+(* code ------------------------------------------------------------- *)
 
 
-let spec_to_bitms: spec_t -> b_key_t -> bitm_t list = 
+type state = Nt_item_set.t
+
+
+let state_to_bitms: state -> key -> blocked_item list = 
   fun s0 key -> 
-    (Spec_t.elements s0)
+    (Nt_item_set.elements s0)
     |> List.map (function
         | nitm when (nitm.bs <> [] && bitm_to_key nitm = key) -> [nitm]
         | _ -> [])
     |> List.concat
 
 
-let new_items : ctxt_t -> spec_t -> spec_item_t -> spec_item_t list = 
+let new_items : context -> state -> nt_item -> nt_item list = 
   fun c0 s0 nitm -> 
     let complete = (nitm.bs = []) in
     match complete with
-    | true -> (
-        let (k,sym,j) = (nitm.i,NT(nitm.nt),nitm.k) in
-        (* let citm : citm_t = {k;sym;j} in *)
-        let key = (k,sym) in
-        let bitms = spec_to_bitms s0 key in
-        let f bitm = cut bitm j in
-        List.map f bitms)
-    | false -> (
-        (* blocked, so process next sym *)
-        let bitm = nitm in
-        let (k,sym) = (bitm.k,List.hd nitm.bs) in
-        (* now look at symbol we are blocked on *)
-        match sym with
-        | NT nt -> 
-          let nitms = c0.g0.nt_items_for_nt nt (c0.i0.str,k) in
-          nitms
-        | TM tm -> 
-          (* parse tm and complete with item *)
-          let k = bitm.k in
-          let p = c0.g0.p_of_tm tm in
-          let js = p (c0.i0.str,k,c0.i0.len) in
-          let f j = cut bitm j in
-          List.map f js) 
+    | true -> 
+      let (k,sym,j) = (nitm.i,NT(nitm.nt),nitm.k) in
+      (* let citm : citm_t = {k;sym;j} in *)
+      let key = (k,sym) in
+      let bitms = state_to_bitms s0 key in
+      let f bitm = cut bitm j in
+      List.map f bitms
+    | false -> 
+      (* blocked, so process next sym *)
+      let bitm = nitm in
+      let (k,sym) = (bitm.k,List.hd nitm.bs) in
+      (* now look at symbol we are blocked on *)
+      match sym with
+      | NT nt -> 
+        let nitms = c0.grammar.nt_items_for_nt nt (c0.input.str,k) in
+        nitms
+      | TM tm -> 
+        (* parse tm and complete with item *)
+        let k = bitm.k in
+        let p = c0.grammar.p_of_tm tm in
+        let js = p (c0.input.str,k,c0.input.len) in
+        let f j = cut bitm j in
+        List.map f js
 
 
-let rec spec' c0 s0 = 
-  let new_itms = 
-    (Spec_t.elements s0)
-    |> List.map (new_items c0 s0)
-    |> List.concat
-    |> Spec_t.of_list
+(* FIXME very inefficient; could at least separate into items that
+   have definitely been processed and those pending *)
+let step c0 = 
+  let f s = 
+    let new_itms = 
+      Nt_item_set.elements s
+      |> List.map (new_items c0 s)
+      |> List.concat
+      |> Nt_item_set.of_list
+    in
+    let s1 = Nt_item_set.union s new_itms in
+    (* NOTE this works because s0 <= s1 *)
+    let set_equal xs ys = Nt_item_set.(cardinal xs = cardinal ys) in
+    if set_equal s1 s then None else Some s1
   in
-  let s1 = Spec_t.union s0 new_itms in
-  if Spec_t.equal s1 s0 then s0 else spec' c0 s1
+  fun s -> iter_opt f s
 
 
-(* construct initial context, apply spec' *)
-let se_spec : ctxt_t -> nt -> Nt_item_set.t = 
+(* construct initial context, apply step *)
+let run : context -> nt -> Nt_item_set.t = 
   fun c0 nt ->
-    let init = {nt;i=0;as_=[];k=0;bs=[NT nt]} in
-    let s0 = Spec_t.of_list [init] in
-    let s1 = spec' c0 s0 in
-    Spec_t.remove init s1  (* remove the dummy item *)
+    {nt;i=0;as_=[];k=0;bs=[NT nt]} |> fun init ->
+    Nt_item_set.of_list [init] 
+    |> step c0 
+    |> Nt_item_set.remove init  (* remove the dummy item; assume no X -> X rule *)
+
+
+(* post-processing -------------------------------------------------- *)
+
+let extract_results r = r |> Nt_item_set.elements
+
+let results_to_string xs = 
+  xs 
+  |> results_to_yojson 
+  |> Yojson.Safe.pretty_to_string
