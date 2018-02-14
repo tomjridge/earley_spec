@@ -46,6 +46,11 @@ module E_EEE = struct
 
   let c0 str = {grammar;input=(i0 str)}
 
+  let sym_to_string = function
+    | TM 1 -> "eps"
+    | TM 3 -> "x"
+    | NT 2 -> "E"
+    | _ -> failwith __LOC__
 end
 
 open E_EEE
@@ -55,8 +60,10 @@ let main () =
   let str = String.make len 'x' in
   Naive_general_parser.run (c0 str) e' 
   |> extract_results
-  |> results_to_string
-  |> print_endline
+(*  |> results_to_string
+  |> print_endline *)
+  |> List.map (itm_to_string ~sym_to_string)
+  |> List.iter print_endline
 
 ;;
 

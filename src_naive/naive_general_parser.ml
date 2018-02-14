@@ -22,6 +22,18 @@ type nt_item = {
   bs: sym list
 }  [@@deriving yojson]
 
+
+(* some pretty printing *)
+
+let itm_to_string ~sym_to_string itm =
+  Printf.sprintf 
+    "(%s -> %d [%s] %d [%s])"
+    (itm.nt |> fun nt -> sym_to_string (NT nt))
+    itm.i
+    (itm.as_ |> List.map sym_to_string |> String.concat ",")
+    itm.k
+    (itm.bs |> List.map sym_to_string |> String.concat ",")
+
 type results = nt_item list  [@@deriving yojson]
 
 
