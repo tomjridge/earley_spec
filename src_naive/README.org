@@ -1,0 +1,2 @@
+A general CFG parser, but with non-O(n^3) performance. Used for
+specification only.

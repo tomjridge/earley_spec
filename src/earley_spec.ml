@@ -1,4 +1,18 @@
 (*
+
+* An implementation of a general parser with O(n^3) performance
+
+Unlike Earley, this does not operate in stages. It does have O(n^3)
+performance.
+
+The `step` code is presented as a "minimal" general parser. 
+
+In terms of absolute performance, `tjr_simple_earley` is better, and
+closer to what Earley presented originally.
+
+*)
+
+(*
 #require "ppx_deriving_yojson";;
 #require "tjr_lib";;
 *)
