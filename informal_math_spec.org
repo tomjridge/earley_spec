@@ -6,17 +6,60 @@ X -> i,as,k,S bs     S -> k,...,j,[]
 X -> i,as S,j,bs
 
 
-* inefficient, unstaged
+* inefficient, unstaged; single induction
+** description
 
 Starting with ** -> X,0,0 (where ** is some special symbol and X is
 the start nonterm), 
 
+- define S_0, and S_i inductively by adding new items from those in S_(i-1)
+
 - add items formed from Cut
-- if there is an item X -> i,as,k,TM bs, where TM is a terminal
+- if X -> i,as,k,Y bs then expand Y at k
+- if X -> i,as,k,TM bs, where TM is a terminal
   matching the input at position k, then add TM -> k,[],j,[], to
   indicate that the terminal TM could be parsed from j to j
 
 this is coded as "inefficient_unstaged_terminal_items.ml"
+
+
+* mathematical, staged, with double induction, and based on dynamic programming; inefficient; useful for completeness proof
+
+
+Starting with ** -> X,0,0 (where ** is some special symbol and X is
+the start nonterm), 
+
+- define S_0, and S_i inductively
+- S_0,0 is  ** -> 0,[],0,X
+- S_k,i+1 is S_k,i with all new items formed from items in S_k,i
+- NOTE that eventually S_k,i = S_k,(i+1) = ... ie constant
+- So define S_(k+1),0 = { itm | ? (X -> i,as,k,"c" bs) in S_k,inf, and
+  input matches "c" at poisition k }
+  - for this to be computable, we need to also define limit(k) = min i st
+    S_k,i is constant; this can be done after computing S_k,i
+  - to generalize to arbitary terminals, we need to take account of
+    eps terminals, and also terminals which consume more than a single
+    char
+  - but for now we can simplify by assuming a terminal is either eps
+    or a single char
+
+NOTE in order to most closely match this definition, we might work
+with a dynamic programming approach, where f(k) and S_k,i get filled
+in successively; this would look best in python
+
+This can be proven equivalent with a very naive version of earley (the
+approach using a single induction); moreover, the induction scheme
+matches the staged version of earley that we actually implement in the
+real algorithm
+
+
+NOTE if we even maintain a set of new items at stage S_k,(i+1), then
+only these need to be processed against S_k,i (and note that we never
+process an item against itself); So NEW_k,i are the items we have to
+process for S_k,i+1; this is getting more towards an algorithm;
+actually this corresponds almost exactly to a version where we
+maintain a list of lists of new items, and append to this list to add
+more items
 
 
 * inefficient, staged
@@ -26,5 +69,6 @@ As unstaged, but at stage k we process:
 - items blocked on TM at k, by inspecting the input; this may lead to
   adding items at stage k+1
 
+FIXME
 
 

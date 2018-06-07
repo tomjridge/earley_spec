@@ -1,10 +1,6 @@
 #require "ppx_deriving_yojson";;
 
-(* repeat till None, then return last state *)
-let rec iter_opt f s =
-  match f s with
-  | None -> s
-  | Some s -> iter_opt f s
+(* a version based on dynamic programming *)
 
 
 (* types, prelude --------------------------------------------------- *)
@@ -37,22 +33,15 @@ let itm_to_string ~sym_to_string itm =
 
 type results = item list  [@@deriving yojson]
 
-
-type string_t = string
-
 type grammar_t = {
-  items_for_nt: nt -> (string_t * int) -> item list;
-  p_of_tm: tm -> string_t -> int -> int list
+  expand_nt: nt:nt -> str:string -> index:int -> item list;
+  expand_tm: tm:tm -> str:string -> index:int -> item list
 }
 
-type input_t = {
-  str: string_t;
-  len: int;
-}
 
 type context = {
   grammar: grammar_t;
-  input: input_t
+  input: string
 }
 
 
@@ -83,6 +72,10 @@ module Item_set =
 
 type state = Item_set.t
 
+(* we construct sets S(i,j) inductively *)
+
+let _S = Array.make_matrix 100 100 Item_set.empty  (* we update this imperatively *)
+
 
 let state_to_bitms: state -> key -> blocked_item list = 
   fun s0 key -> 
@@ -96,6 +89,7 @@ let state_to_bitms: state -> key -> blocked_item list =
 let new_items : context -> state -> item -> item list = 
   fun c0 s0 nitm -> 
     let complete = (nitm.bs = []) in
+    let str = c0.input in
     match complete with
     | true -> 
       let (k,sym,j) = (nitm.i,nitm.sym,nitm.k) in
@@ -109,32 +103,36 @@ let new_items : context -> state -> item -> item list =
       let (k,sym) = (bitm.k,List.hd nitm.bs) in
       (* now look at symbol we are blocked on *)
       match sym with
-      | NT nt -> c0.grammar.items_for_nt nt (c0.input.str,k)
-      | TM tm ->         
-        let k = bitm.k in
-        let p = c0.grammar.p_of_tm tm in
-        let js = p c0.input.str k in
-        List.map (fun j -> {sym=TM tm; i=k; as_=[]; k=j; bs=[] }) js  (* terminal tm items; could wrap *)
+      | NT nt -> c0.grammar.expand_nt ~nt ~str ~index:k
+      | TM tm -> c0.grammar.expand_tm ~tm ~str ~index:k
 
 
 let set_equal xs ys = Item_set.(cardinal xs = cardinal ys) 
 
 
-(* FIXME very inefficient; could at least separate into items that
-   have definitely been processed and those pending *)
-(* NOTE this is a single induction, unstaged, till everything done *)
-let step c0 = 
-  let f s = 
-    let new_itms = 
-      Item_set.elements s
-      |> List.map (new_items c0 s)
-      |> List.concat
-      |> Item_set.of_list
-    in
-    let s1 = Item_set.union s new_itms in
-    if set_equal s1 s then None else Some s1
+(* NOTE this is a sort of double induction *)
+(* FIXME call these sets _S(k)(i) so that k matches the itm.k *)
+(* FIXME work with sets rather than converting to lists *)
+let step ~ctxt _S = 
+  let rec loop (i,k) = 
+    let _S_i_k = _S.(i).(k) in
+    match i > String.length ctxt.input with | true -> () | false ->
+      (* update _S(i,k+1) *)
+      let new_itms = 
+        Item_set.elements _S_i_k
+        |> List.map (new_items ctxt _S_i_k)
+        |> List.concat
+        |> Item_set.of_list
+        |> Item_set.elements
+      in
+      (* FIXME some of these items have different k values if we allow arbitrary terminals *)
+      let at_this_stage,at_future_stages = List.partition (fun itm -> itm.k = i) new_itms in
+      at_future_stages |> List.iter (fun itm ->
+          _S.(itm.k).(0) <- Item_set.add itm (_S.(itm.k).(0)));
+      _S.(i).(k+1) <- Item_set.union _S_i_k (Item_set.of_list at_this_stage);
+      if set_equal _S.(i).(k) _S.(i).(k+1) then loop (i+1,0) else loop (i,k+1)
   in
-  fun s -> iter_opt f s
+  loop (0,0)
 
 
 (* construct initial context, apply step *)
@@ -172,7 +170,7 @@ let parse_eps s i =
   [i]
 
 let parse_x s i =
-  (* this terminal parser requires to know string_t *)
+  (* this terminal parser requires to know string *)
   if i < String.length s && String.get s i = 'x' then 
     [i+1]
   else
