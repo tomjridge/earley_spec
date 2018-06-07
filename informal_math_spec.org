@@ -1,0 +1,30 @@
+
+* Cut 
+
+X -> i,as,k,S bs     S -> k,...,j,[]
+------------------------------------ Cut
+X -> i,as S,j,bs
+
+
+* inefficient, unstaged
+
+Starting with ** -> X,0,0 (where ** is some special symbol and X is
+the start nonterm), 
+
+- add items formed from Cut
+- if there is an item X -> i,as,k,TM bs, where TM is a terminal
+  matching the input at position k, then add TM -> k,[],j,[], to
+  indicate that the terminal TM could be parsed from j to j
+
+this is coded as "inefficient_unstaged_terminal_items.ml"
+
+
+* inefficient, staged
+
+As unstaged, but at stage k we process: 
+- cutting S -> k',...,k,[] with items blocked on k'
+- items blocked on TM at k, by inspecting the input; this may lead to
+  adding items at stage k+1
+
+
+
